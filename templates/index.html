@@ -10,7 +10,7 @@
 
     <style>
       h1 {text-align: center;}
-      p {text-align: center;}
+      p {font-size: large}
       .container{
           height: 100vh;
           width: 100vw;
@@ -19,13 +19,23 @@
           justify-content: center;
           flex-wrap: wrap;
       }
+     .btn{
+         margin: 2%;
+         height: 10vh;
+         width: 10vw;
+         display: inline-flex;
+         align-items: center;
+         justify-content: center;
+         font-size: medium;
+         background-color: #292626;
+     }
 
     </style>
 
     <body>
-        <p1>Joseph Roussos</p1>
+        <p>Joseph Roussos</p>
         <div class="container">
-            <button type="button" class="btn btn-dark">Chess Stats</button>
+            <a class="btn btn-dark" href="{{ url_for('chess_page', pageName='home') }}" role="button">Chess Stats</a>
             <button type="button" class="btn btn-dark">Wordle Helper</button>
         </div>
 

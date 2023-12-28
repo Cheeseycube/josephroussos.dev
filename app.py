@@ -11,9 +11,17 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
-
+@app.route('/chess')
 @app.route('/chess/<pageName>', methods=["GET", "POST"])
 def chess_page(pageName):
+    match pageName:
+        case 'home':
+            if request.method == "POST":
+                user_name = request.form.get("userName")
+
+            return render_template('chess_home.html')
+        case _:
+            return f'No route found: josephroussos.dev/chess/{pageName}'
     return 'Chess is fun!'
 @app.route('/wordle/<pageName>', methods=["GET", "POST"])
 def wordle_page(pageName):
