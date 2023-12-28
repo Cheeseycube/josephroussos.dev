@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--A beautiful navbar styled by CBA team2-->
+    <meta charset="UTF-8">
+    <!--make nav size flexible to users screens-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--Link the stylesheet we created-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navStyles.css') }}">
+</head>
+<body>
+    <!--simple nav with 4 pages-->
+    <header class="nav_header">
+        <!--links to homepage-->
+        <a class="logo" href="{{ url_for('index', pageName='-')}}">Home</a>
+        <nav>
+            <ul class="nav_links">
+                <!--every other accessible page-->
+                <li class="link"><a href="{{ url_for('chess_page', pageName='chess_stats') }}">Chess Stats</a></li>
+                <li class="link"><a href="{{ url_for('wordle_page', pageName='wordle_helper') }}">Wordle Helper</a></li>
+            </ul>
+        </nav>
+    </header>
+</body>
+</html>
