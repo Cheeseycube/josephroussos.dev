@@ -1,11 +1,11 @@
 $('#graphOptions').on('change',function(){
 
     $.ajax({
-        url: "/change_graph",
+        url: "/loading",
         type: "GET",
         contentType: 'application/json;charset=UTF-8',
         data: {
-            'selected': document.querySelector('input[name=select_graph]:checked').value
+            'selected': document.querySelector('button[name=Submit]:on').value
 
         },
         dataType:"json",

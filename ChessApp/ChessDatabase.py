@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 import bcrypt
 from dahuffman import HuffmanCodec
+import sys
 
 # If using oracle (locally hosted database): https://www.oracle.com/database/technologies/appdev/python/quickstartpythononprem.html
 
@@ -127,7 +128,7 @@ def add_multiple_Games(Games, userID, platform):
     cursor = connection.cursor()
 
     # training the huffman encoder
-    training_file = open('training_data.txt', 'r')
+    training_file = open(os.getenv('TRAINING_DATA_DIR'), 'r')
     training_data = training_file.read()
     codec = HuffmanCodec.from_data(training_data)
 
@@ -137,7 +138,7 @@ def add_multiple_Games(Games, userID, platform):
         try:
             encoded_game = codec.encode(game.pgn)
         except:
-            print("could not encode the given game: see errors.txt for the affected pgn")
+            print("could not encode a game: see errors.txt for the affected pgn", file=sys.stderr)
             error_file = open('errors.txt', 'a')
             error_file.write(game.pgn + "\n")
             error_file.write(game.link + "\n\n")

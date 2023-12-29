@@ -9,8 +9,8 @@
     </head>
 
     <style>
-      h1 {text-align: center;}
-      p {font-size: large}
+      h1 {text-align: center; font-size: x-large;}
+      p {font-size: large; text-align: center}
       .centerText{
           text-align: center;
           font-size: medium;
@@ -32,29 +32,12 @@
     </style>
 
     <body>
-    {% with errors = get_flashed_messages(category_filter=["error"]) %}
-       {% if errors %}
-         <div class="alert_error">
-            {% for message in errors %}
-          <li>{{ message }}</li>
-       {% endfor %}
-       </div>
-       {% endif %}
-    {% endwith %}
 
         <p>Joseph Roussos</p>
-        <h1>Please provide a Chess.com username.  If you don't have one, use mine: Cheesecube01</h1>
-        <form action="{{url_for('chess_page', pageName='home')}}" method="post">
-           <div class="centerText">
-              <label for="userName">User Name:</label>
-              <input type="text" id="userName" name="userName" placeholder="Chess.com username">
-           </div>
-
-
-
-        </form>
-
-
+        <h1>Login, or Create an Account to view your chess.com stats.  For testing purposes you can log in as a guest.</h1>
+        <p><a class="btn btn-dark" href="{{ url_for('chess', pageName='create_account') }}" role="button">Create Account</a></p>
+        <p><a class="btn btn-dark" href="{{ url_for('chess', pageName='login') }}" role="button">Login</a></p>
+        <p><a class="btn btn-dark" href="{{ url_for('chess', pageName='profile') }}" role="button">Guest Login</a></p>
 
     </body>
 </html>

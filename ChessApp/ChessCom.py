@@ -1,5 +1,4 @@
-from chessdotcom import get_player_games_by_month_pgn
-
+from chessdotcom import get_player_games_by_month_pgn, Client
 
 # python chess.com api wrapper: https://pypi.org/project/chess.com/
 # chess.com api official documentation: https://www.chess.com/news/view/published-data-api#pubapi-general
@@ -29,6 +28,11 @@ class GameCollection:
         self.pgns = []
         self.pgns_string = ""
         self.games = []
+        # this is necessary to use the api for some reason
+        Client.request_config["headers"]["User-Agent"] = (
+            "Joseph Roussos's python application. "
+            "Contact me at jroussos01@gmail.com"
+        )
 
     # returns a list of games, and sets the private fields
     def get_month_games(self, user, year, month):
@@ -82,3 +86,7 @@ class GameCollection:
 
         return self.games
 
+if __name__ == "__main__":
+    print('hi')
+    #game_col = GameCollection()
+    #game_col.get_month_games(user='Cheesecube01', month='11', year='2023')

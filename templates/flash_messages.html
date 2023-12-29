@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title></title>
+    <!--Link the stylesheet we created-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chessStyles.css') }}">
+</head>
+<body>
+    {% with errors = get_flashed_messages(category_filter=["error"]) %}
+        {% if errors %}
+            <div class="alert_error">
+                {% for message in errors %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% with messages = get_flashed_messages(category_filter=["message"]) %}
+        {% if messages %}
+            <div class="alert_message">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+</body>
+</html>

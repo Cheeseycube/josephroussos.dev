@@ -16,7 +16,8 @@
         <nav>
             <ul class="nav_links">
                 <!--every other accessible page-->
-                <li class="link"><a href="{{ url_for('chess_page', pageName='chess_stats') }}">Chess Stats</a></li>
+                <li class="link"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="link"><a href="{{ url_for('chess', pageName='home') }}">Chess Stats</a></li>
                 <li class="link"><a href="{{ url_for('wordle_page', pageName='wordle_helper') }}">Wordle Helper</a></li>
             </ul>
         </nav>

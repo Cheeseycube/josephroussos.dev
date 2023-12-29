@@ -1,3 +1,4 @@
 *.idea
 .env
 ChessApp/Wallet_ChessDB
+*.pyc
