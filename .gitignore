@@ -4,3 +4,4 @@ ChessApp/Wallet_ChessDB
 *.pyc
 logs
 ChessApp/errors.txt
+venv
