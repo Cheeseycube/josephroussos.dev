@@ -475,7 +475,7 @@ def getUser(user_name):
     # setting up the connection
     global pool
     if pool is None:
-        print("Connection pool was null, aborting addUser operation")
+        print("Connection pool was null, aborting getUser operation")
         return -1
     connection = pool.acquire()
     cursor = connection.cursor()

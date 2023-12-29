@@ -101,6 +101,6 @@ def wordle_page(pageName):
 
 if __name__ == '__main__':
     load_dotenv()
-    load_dotenv('/home/var/www/josephroussos.dev/.env')
+    load_dotenv('/var/www/josephroussos.dev/.env')
     ChessDB.makeConnectionPool(4)
     app.run(port=8080, debug=False)
