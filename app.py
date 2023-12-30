@@ -4,7 +4,10 @@ import ChessApp.ChessDatabase as ChessDB
 import ChessApp.ChessCom as ChessCom
 import secrets
 from dotenv import load_dotenv
-
+import chess as pychess
+import chess.pgn as chess_pgn
+import io
+from datetime import timedelta
 
 
 # intitializing the app
@@ -18,6 +21,24 @@ class User:
         self.name = name
         self.id = id
 
+
+def convert_seconds(seconds):
+    if seconds < 60:
+        if seconds < 10:
+            return f"0:0{seconds:.1f}"
+        else:
+            return f"0:{seconds:.1f}"
+    if seconds < 3600:  # Less than an hour
+        minutes = seconds // 60
+        seconds = seconds % 60
+        return f"{minutes:02d}:{seconds:02d}"
+    else:  # An hour or more
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        seconds = (seconds % 3600) % 60
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -26,7 +47,10 @@ def index():
 user = User(None, None)
 @app.route('/chess')
 @app.route('/chess/<pageName>', methods=["GET", "POST"])
-def chess(pageName):
+@app.route('/chess/analyze_game/<gameID>')
+def chess(pageName=None, gameID=None):
+    if gameID is not None:
+        pageName = 'analyze_game'
     global user
     match pageName:
         case 'home':
@@ -89,8 +113,52 @@ def chess(pageName):
                 return 'You must log in before accessing this page'
             games = ChessDB.get_all_games(user.id)
             return render_template('chess_view_games.html', name=user.name, games=games)
+        case 'analyze_game':
+            game = ChessDB.get_game_by_id(gameID)
+            if game is None:
+                return "No game found"
+            encoded_pgn = ChessDB.getPGN(game['PGNID'])
+            pgn = ChessDB.decodePGN(encoded_pgn)
+
+            # Parse the PGN using python-chess library
+            parsed_game = chess_pgn.read_game(io.StringIO(pgn))
+            board = parsed_game.board()
+            fen_positions = []
+
+            # Iterate through the moves and collect FEN positions
+            for move in parsed_game.mainline_moves():
+                board.push(move)
+                fen_positions.append(board.fen())
+
+            # timestamp stuff
+            timestamps = []
+            timestamps_string = []
+
+            # gives us a string in hh mm ss format
+            for node in parsed_game.mainline():
+                time_elapsed = node.clock()
+                if time_elapsed is not None:
+                    if (time_elapsed < 60):
+                        time_elapsed = round(time_elapsed, 2)
+                    else:
+                        time_elapsed = int(time_elapsed)
+                    # time_str = str(timedelta(seconds=time_elapsed))
+                    time_str = convert_seconds(time_elapsed)
+                    print(f"{node.move}: {time_elapsed}")
+                    print(f"{node.move}: {time_str}")
+                    timestamps.append(time_elapsed)
+                    timestamps_string.append(time_str)
+
+            # time control
+            time_control = int(game['TIME_CONTROL'])
+            time_control_string = str(timedelta(seconds=time_control))
+            return render_template('chess_analyze_game.html', given_game=game, given_pgn=pgn, fen_positions=fen_positions,
+                                   timestamps=timestamps, timestamps_string=timestamps_string, time_control=time_control,
+                                   time_control_string=time_control_string)
         case _:
             return f'No route found: josephroussos.dev/chess/{pageName}'
+
+
 
 
 
