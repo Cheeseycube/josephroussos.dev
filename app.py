@@ -4,7 +4,6 @@ import ChessApp.ChessDatabase as ChessDB
 import ChessApp.ChessCom as ChessCom
 import secrets
 from dotenv import load_dotenv
-import chess as pychess
 import chess.pgn as chess_pgn
 import io
 from datetime import timedelta
