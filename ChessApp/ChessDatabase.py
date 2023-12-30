@@ -397,7 +397,9 @@ def makeConnectionPool(pool_size):
     pool_max = pool_size
     pool_inc = 0
     pool_gmd = oracledb.SPOOL_ATTRVAL_WAIT
-
+    print(f"USER: {os.getenv('ORACLE_USERNAME')}", file=sys.stderr)
+    print(f"PASSWORD: {os.getenv('ORACLE_PASSWORD')}", file=sys.stderr)
+    print(f"CONNECTION STRING: {os.getenv('ORACLE_CONNECTION_STRING')}", file=sys.stderr)
     _pool = oracledb.SessionPool(user=os.getenv("ORACLE_USERNAME"),
                                  password=os.getenv("ORACLE_PASSWORD"),
                                  dsn=os.getenv("ORACLE_CONNECTION_STRING"),
