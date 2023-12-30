@@ -474,6 +474,9 @@ def get_allUsers():
 
 # returns a user dict or None if the user is not found
 def getUser(user_name):
+    load_dotenv()
+    load_dotenv('/var/www/josephroussos.dev/.env')
+    makeConnectionPool(4)
     # setting up the connection
     global pool
     if pool is None:
