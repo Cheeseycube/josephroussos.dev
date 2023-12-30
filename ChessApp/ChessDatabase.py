@@ -111,7 +111,7 @@ def getPGN(idNum):
 
 def decodePGN(encoded_pgn):
     # training the huffman encoder
-    training_file = open('training_data.txt', 'r')
+    training_file = open(os.getenv('TRAINING_DATA_DIR'), 'r')
     training_data = training_file.read()
     codec = HuffmanCodec.from_data(training_data)
     return codec.decode(encoded_pgn)
