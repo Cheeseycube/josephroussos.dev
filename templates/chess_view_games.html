@@ -45,7 +45,7 @@ p {text-align: center;}
     {% for game in games %}
         <tr>
             <td>{{game['TIME_CONTROL']}}</td>
-            <td><a class="btn btn-dark" href="{{ url_for('chess', gameID=game['GAMEID']) }}" role="button">Game Link</a></td>
+            <td><a class="btn btn-dark" href="{{ url_for('chess', gameID=game['GAMEID']) }}" role="button">{{game['WHITE']}} ({{game['WHITE_ELO']}})<br>{{game['BLACK']}} ({{game['BLACK_ELO']}})</a></td>
             <td>{{game['WHITE']}} ({{game['WHITE_ELO']}})<br>{{game['BLACK']}} ({{game['BLACK_ELO']}}</td>
             <td>{{game['DATEPLAYED']}}</td>
         </tr>

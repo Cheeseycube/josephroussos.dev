@@ -61,7 +61,7 @@ def addPGN(game, encoded_pgn):
         error_obj, = e.args
         print("error adding pgn to database, see errors.txt")
         print(f"error message: {error_obj}")
-        error_file = open('ChessApp/errors.txt', 'a')
+        error_file = open(os.getenv('TRAINING_DATA_DIR'), 'a')
         error_file.write(game.pgn + "\n")
         error_file.write(game.link + "\n\n")
         connection.commit()
@@ -71,7 +71,7 @@ def addPGN(game, encoded_pgn):
         error_obj = e.args
         print("Duplicate pgn was not added, returning original pgn's id number, see errors.txt for the affected pgn")
         print(f"error message: {error_obj}")
-        error_file = open('ChessApp/errors.txt', 'a')
+        error_file = open(os.getenv('TRAINING_DATA_DIR'), 'a')
         error_file.write(game.pgn + "\n")
         error_file.write(game.link + "\n\n")
         connection.commit()
@@ -139,7 +139,7 @@ def add_multiple_Games(Games, userID, platform):
             encoded_game = codec.encode(game.pgn)
         except:
             print("could not encode a game: see errors.txt for the affected pgn", file=sys.stderr)
-            error_file = open('ChessApp/errors.txt', 'a')
+            error_file = open(os.getenv('TRAINING_DATA_DIR'), 'a')
             error_file.write(game.pgn + "\n")
             error_file.write(game.link + "\n\n")
             continue
@@ -397,9 +397,6 @@ def makeConnectionPool(pool_size):
     pool_max = pool_size
     pool_inc = 0
     pool_gmd = oracledb.SPOOL_ATTRVAL_WAIT
-    print(f"USER: {os.getenv('ORACLE_USERNAME')}", file=sys.stderr)
-    print(f"PASSWORD: {os.getenv('ORACLE_PASSWORD')}", file=sys.stderr)
-    print(f"CONNECTION STRING: {os.getenv('ORACLE_CONNECTION_STRING')}", file=sys.stderr)
     _pool = oracledb.SessionPool(user=os.getenv("ORACLE_USERNAME"),
                                  password=os.getenv("ORACLE_PASSWORD"),
                                  dsn=os.getenv("ORACLE_CONNECTION_STRING"),
