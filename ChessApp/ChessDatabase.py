@@ -61,19 +61,21 @@ def addPGN(game, encoded_pgn):
         error_obj, = e.args
         print("error adding pgn to database, see errors.txt")
         print(f"error message: {error_obj}")
-        error_file = open(os.getenv('TRAINING_DATA_DIR'), 'a')
+        error_file = open(os.getenv('CHESS_ERRORS_PATH'), 'a')
         error_file.write(game.pgn + "\n")
         error_file.write(game.link + "\n\n")
+        error_file.close()
         connection.commit()
         # returning -1 means the pgn was not added and there is no duplicate
         return {'id': -1, 'isDuplicate': False}
     except oracledb.IntegrityError as e:
         error_obj = e.args
-        print("Duplicate pgn was not added, returning original pgn's id number, see errors.txt for the affected pgn")
+        #print("Duplicate pgn was not added, returning original pgn's id number, see errors.txt for the affected pgn")
         print(f"error message: {error_obj}")
-        error_file = open(os.getenv('TRAINING_DATA_DIR'), 'a')
+        error_file = open(os.getenv('CHESS_ERRORS_PATH'), 'a')
         error_file.write(game.pgn + "\n")
         error_file.write(game.link + "\n\n")
+        error_file.close()
         connection.commit()
         # returning the original in the case of a duplicate
         sql_statement = "select PGNID from PGNS WHERE PGN = :encoded_pgn_bv"
@@ -139,9 +141,10 @@ def add_multiple_Games(Games, userID, platform):
             encoded_game = codec.encode(game.pgn)
         except:
             print("could not encode a game: see errors.txt for the affected pgn", file=sys.stderr)
-            error_file = open(os.getenv('TRAINING_DATA_DIR'), 'a')
+            error_file = open(os.getenv('CHESS_ERRORS_PATH'), 'a')
             error_file.write(game.pgn + "\n")
             error_file.write(game.link + "\n\n")
+            error_file.close()
             continue
 
         # add each game's pgn to the pgn table and get the corresponding id num
