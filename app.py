@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, flash
+import json
+from flask import Flask, render_template, request, flash, jsonify
 import flask
 import ChessApp.ChessDatabase as ChessDB
 import ChessApp.ChessCom as ChessCom
@@ -7,12 +8,12 @@ from dotenv import load_dotenv
 import chess.pgn as chess_pgn
 import io
 from datetime import timedelta
-
+from WordleApp.Wordle import *
 
 # intitializing the app
 app = Flask(__name__)
-#app.secret_key = secrets.token_urlsafe(16)
-app.secret_key = 'secret-key'
+app.secret_key = secrets.token_urlsafe(16)
+#app.secret_key = 'secret-key'
 
 # custom login--not flask login
 class User:
@@ -161,10 +162,37 @@ def chess(pageName=None, gameID=None):
 
 
 
+
 ####################### Wordle #######################
-@app.route('/wordle/<pageName>', methods=["GET", "POST"])
-def wordle_page(pageName):
-    return 'Wordle is kinda fun'
+@app.route('/wordle', methods=["GET", "POST"])
+def wordle():
+    # maybe do something
+    return render_template('wordle_home.html')
+
+@app.route('/wordle_update', methods=['GET', 'POST'])
+def wordle_update():
+    enteredWord = request.args['enteredWord']
+    colors = request.args.getlist('colors[]')
+    remaining_words = request.args.getlist('remaining_words[]')
+
+    wordleHelper = wordle_helper()
+    feedback = []
+    for color in colors:
+        match color:
+            case 'green':
+                feedback.append(WordleCategory.HERE)
+            case 'gray':
+                feedback.append(WordleCategory.NOT_ANYWHERE)
+            case _:
+                feedback.append(WordleCategory.NOT_HERE)
+    enteredWord = enteredWord.upper()
+
+
+    matches = wordleHelper.find_feedback_matches(enteredWord, feedback, remaining_words)
+    print(feedback)
+    #print(colors)
+    return matches
+    #return jsonify({enteredWord: "from python!"})
 
 if __name__ == '__main__':
     load_dotenv()
