@@ -49,6 +49,7 @@
   margin: 0 2px;
   cursor: pointer;
   text-transform: uppercase;
+  appearance: none;
 }
 
 .dropdown {
