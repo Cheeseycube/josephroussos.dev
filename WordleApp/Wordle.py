@@ -52,6 +52,7 @@ class wordle_helper:
         for filtered_word in self.filtered_words:
             if wordle_feedback(proposed_word, filtered_word) == str(given_feedback):
                 matches.append(filtered_word)
+        matches = sorted(matches)
         return matches
 
 
