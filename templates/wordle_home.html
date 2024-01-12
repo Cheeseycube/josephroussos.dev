@@ -13,6 +13,9 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='css/wordleStyles.css') }}">
         <!-- jquery ajax -->
         <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+        <!-- plotly js -->
+        <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+
     </head>
 
     <style>
@@ -151,6 +154,7 @@
             <button type="submit" id="submit_button" class="btn btn-dark" style="width: 6rem; justify-content: center; display: inline-flex; margin: 1%">Submit</button>
             <ul class="remaining_words"></ul>
         </div>
+        <div id="letter_distribution_plot" class="letter_distribution_plot"></div>
 
 
 
@@ -222,7 +226,6 @@
 
             // ajax shit
             $('#submit_button').on('click',function(){
-                console.log(colors)
                 $.ajax({
                     url: "/wordle_update",
                     type: "GET",
@@ -236,21 +239,25 @@
                     dataType:"json",
                     success: function (data) {
                         if (data != null){
-                            //let dataDict = JSON.stringify(data)
+                            let dataString = JSON.stringify(data)
+                            let dataDict = JSON.parse(dataString)
+                            //let dataDict = {{data | safe}}
                             remaining_words_holder = document.getElementsByClassName("remaining_words")[0]
                             remaining_words_holder.textContent = ""
-                            //remaining_words_holder.textContent = data
-                            remaining_words = data
+                            remaining_words = dataDict['matches']
                             remaining_words.forEach((word) => {
                                 let li = document.createElement("li");
                                 li.innerText = word;
                                 remaining_words_holder.appendChild(li);
                             })
+                            console.log(dataDict)
+                            Plotly.newPlot('letter_distribution_plot', dataDict['letter_plot'], {})
                         }
                         //Plotly.newPlot('committed_sankey_diagram', data );
                     }
                 });
             })
+
         </script>
     </body>
 </html>

@@ -1,4 +1,7 @@
 import json
+
+import pandas as pd
+import plotly.utils
 from flask import Flask, render_template, request, flash, jsonify
 import flask
 import ChessApp.ChessDatabase as ChessDB
@@ -7,6 +10,9 @@ import secrets
 from dotenv import load_dotenv
 import chess.pgn as chess_pgn
 import io
+import plotly.express as px
+import plotly.io as pio
+import plotly.graph_objects as go
 from datetime import timedelta
 from WordleApp.Wordle import *
 
@@ -43,7 +49,7 @@ def convert_seconds(seconds):
 def index():
     return render_template('index.html')
 
-####################### Chess #######################
+####################### Chess ########################
 user = User(None, None)
 @app.route('/chess')
 @app.route('/chess/<pageName>', methods=["GET", "POST"])
@@ -157,7 +163,7 @@ def chess(pageName=None, gameID=None):
                                    time_control_string=time_control_string)
         case _:
             return f'No route found: josephroussos.dev/chess/{pageName}'
-
+####################### Chess ########################
 
 
 
@@ -187,15 +193,51 @@ def wordle_update():
                 feedback.append(WordleCategory.NOT_HERE)
     enteredWord = enteredWord.upper()
 
-
+    # this is a list of all possible words in alphabetical order
     matches = wordleHelper.find_feedback_matches(enteredWord, feedback, remaining_words)
-    print(feedback)
-    #print(colors)
-    return matches
-    #return jsonify({enteredWord: "from python!"})
+    letter_plot = letter_distribution_plot(matches)
+
+    payload = {
+        'matches': matches,
+        'letter_plot': letter_plot
+    }
+    return json.dumps(payload, cls=plotly.utils.PlotlyJSONEncoder)
+
+
+def letter_distribution_plot(words):
+    pio.templates.default = "plotly_dark"
+    #letter_dict = {chr(i): [0] for i in range(ord('A'), ord('Z') + 1)}
+    letter_dict = {
+        'letter': ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
+        'count': [0 for _ in range(26)]
+    }
+    for word in words:
+        for letter in word:
+            letter_dict['count'][ord(letter) - 65] += 1
+            #print(f"{letter}: {ord(letter) - 65}")
+    letter_df = pd.DataFrame.from_records(letter_dict)
+    #print(letter_df)
+    fig = go.Figure(go.Bar(
+        x=list(letter_df['letter']),
+        y=list(letter_df['count']),
+        text=[count for count in list(letter_df['count'])],
+        textposition='auto',
+        hovertemplate='%{text}',
+    ))
+    fig.update_layout(
+        xaxis_title='Letters',
+        yaxis_title='Count',
+        title='Letter distribution'
+    )
+
+    return fig
+####################### Wordle #######################
+
 
 if __name__ == '__main__':
     load_dotenv()
     load_dotenv('/var/www/josephroussos.dev/.env')
+    #words = ['BRIEF', 'FREED', 'FREER', 'FRIED', 'FRILL', 'FRISK', 'FROND', 'FROWN', 'PROOF']
+    #letter_distribution_plot(words).show()
     ChessDB.makeConnectionPool(4)
     app.run(port=8080, debug=False)
