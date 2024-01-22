@@ -216,18 +216,21 @@ def letter_distribution_plot(words):
             letter_dict['count'][ord(letter) - 65] += 1
             #print(f"{letter}: {ord(letter) - 65}")
     letter_df = pd.DataFrame.from_records(letter_dict)
+    # only including non-zero values
+    letter_df = letter_df.loc[letter_df['count'] > 0]
     #print(letter_df)
     fig = go.Figure(go.Bar(
-        x=list(letter_df['letter']),
-        y=list(letter_df['count']),
+        y=list(letter_df['letter']),
+        x=list(letter_df['count']),
         text=[count for count in list(letter_df['count'])],
         textposition='auto',
         hovertemplate='%{text}',
+        orientation='h'
     ))
     fig.update_layout(
-        xaxis_title='Letters',
-        yaxis_title='Count',
-        title='Letter distribution'
+        xaxis_title='Count',
+        yaxis_title='Letters',
+        title='Letter distribution',
     )
 
     return fig

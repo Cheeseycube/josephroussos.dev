@@ -20,7 +20,7 @@ class Wordle_db:
             print(f"Encountered a known error while connecting to MongoDB from WordleApp/Mongodb.py: {e}", file=sys.stderr)
             self.client = None
 
-    def initialize_database(self) -> bool:
+    def reset_used_words(self) -> bool:
         """Drops the `used_words` table if it exists, and creates a new `used_words` table with `wordle_num` as the primary key
 
         Returns:
@@ -127,7 +127,7 @@ class Wordle_db:
 if __name__ == "__main__":
     load_dotenv()
     # parse a txt and use the add_words function
-    #wordle_db = Wordle_db()
-    #wordle_db.initialize_database()
-    #wordle_db.add_used_words(wordle_db.parse_used_words('used_words.txt'))
+    wordle_db = Wordle_db()
+    wordle_db.reset_used_words()
+    wordle_db.add_used_words(wordle_db.parse_used_words('used_words.txt'))
 
