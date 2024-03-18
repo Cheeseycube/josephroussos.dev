@@ -51,9 +51,10 @@ def index():
 
 ####################### Chess ########################
 user = User(None, None)
-@app.route('/chess')
-@app.route('/chess/<pageName>', methods=["GET", "POST"])
-@app.route('/chess/analyze_game/<gameID>')
+# TODO: Re-enable the Chess App once the database is refactored to Postgres
+#@app.route('/chess')
+#@app.route('/chess/<pageName>', methods=["GET", "POST"])
+#@app.route('/chess/analyze_game/<gameID>')
 def chess(pageName=None, gameID=None):
     if gameID is not None:
         pageName = 'analyze_game'
@@ -237,10 +238,12 @@ def letter_distribution_plot(words):
 ####################### Wordle #######################
 
 
+
+
+
 if __name__ == '__main__':
     load_dotenv()
     load_dotenv('/var/www/josephroussos.dev/.env')
-    #words = ['BRIEF', 'FREED', 'FREER', 'FRIED', 'FRILL', 'FRISK', 'FROND', 'FROWN', 'PROOF']
-    #letter_distribution_plot(words).show()
-    ChessDB.makeConnectionPool(4)
+    # TODO: re-enable the Chess App once the database is refactored to Postgres
+    #ChessDB.makeConnectionPool(4)
     app.run(port=8080, debug=False)
