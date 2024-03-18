@@ -153,6 +153,7 @@
             </div>
             <button type="submit" id="submit_button" class="btn btn-dark" style="width: 6rem; justify-content: center; display: inline-flex; margin: 1%">Submit</button>
             <ul class="remaining_words"></ul>
+            <div class="loader" id="loading_spinner" style="display: none"></div>
         </div>
         <div id="letter_distribution_plot" class="letter_distribution_plot"></div>
 
@@ -224,8 +225,12 @@
                 document.dispatchEvent(new KeyboardEvent("keyup", {'key': key}))
             })
 
-            // ajax shit
             $('#submit_button').on('click',function(){
+                // on click, enable loading bar
+                let loadingBar = document.getElementById('loading_spinner')
+                loadingBar.style.display = "block"
+
+                // ajax shit
                 $.ajax({
                     url: "/wordle_update",
                     type: "GET",
@@ -250,7 +255,14 @@
                                 remaining_words_holder.appendChild(li);
                             })
                             //console.log(dataDict)
+
+                            // plot the letter distribution
                             Plotly.newPlot('letter_distribution_plot', dataDict['letter_plot'], {})
+                            
+                            // disable the loading bar
+                            let loadingBar = document.getElementById('loading_spinner')
+                            loadingBar.style.display = "none"
+
                         }
                     }
                 });
