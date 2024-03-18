@@ -17,7 +17,8 @@
             <ul class="nav_links">
                 <!--every other accessible page-->
                 <li class="link"><a href="{{ url_for('index') }}">Home</a></li>
-                <li class="link"><a href="{{ url_for('chess', pageName='home') }}">Chess Stats</a></li>
+                <!-- Disabled Chess App until refactoring is complete -->
+                <!--<li class="link"><a href="{{ url_for('chess', pageName='home') }}">Chess Stats</a></li>-->
                 <li class="link"><a href="{{ url_for('wordle') }}">Wordle Helper</a></li>
             </ul>
         </nav>

@@ -238,11 +238,10 @@
                     },
                     dataType:"json",
                     success: function (data) {
-                        if (data != null){
+                        if (data != null) {
                             let dataString = JSON.stringify(data)
                             let dataDict = JSON.parse(dataString)
-                            //let dataDict = {{data | safe}}
-                            remaining_words_holder = document.getElementsByClassName("remaining_words")[0]
+                            let remaining_words_holder = document.getElementsByClassName("remaining_words")[0]
                             remaining_words_holder.textContent = ""
                             remaining_words = dataDict['matches']
                             remaining_words.forEach((word) => {
@@ -250,10 +249,9 @@
                                 li.innerText = word;
                                 remaining_words_holder.appendChild(li);
                             })
-                            console.log(dataDict)
+                            //console.log(dataDict)
                             Plotly.newPlot('letter_distribution_plot', dataDict['letter_plot'], {})
                         }
-                        //Plotly.newPlot('committed_sankey_diagram', data );
                     }
                 });
             })
