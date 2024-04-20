@@ -2,20 +2,20 @@
 ! are double or triple letters in a word, because I now have an easy solution.
 ! Because I know how to reproduce the wordle program output for a word, I can
 ! use that functionality to find out which words in the wordle dictionary are
-! still possible after I get the wordle feedback. 
+! still possible after I get the wordle feedback.
 !
-! After I get the wordle feedback for my proposed word, I simply apply my 
+! After I get the wordle feedback for my proposed word, I simply apply my
 ! proposed word to every word in the wordle dictionary. Every word that results
-! in the same feedback gets POSSIBLE=1. Practically, I just give every word 
-! POSSIBLE=1 right off the bat, and then change it to POSSIBLE=0 if 
-! (1) the word has already been used in the past, or 
+! in the same feedback gets POSSIBLE=1. Practically, I just give every word
+! POSSIBLE=1 right off the bat, and then change it to POSSIBLE=0 if
+! (1) the word has already been used in the past, or
 ! (2) the feedback for the word does not match the actual wordle feedback.
 !
 !October 10, 2023. Started working on new option for the evaluation phase
-! allows the user to find the 10 best words in the dictionary according to 
-! four criteria: (1) minimax, (2) mean group size, (3) number of 1's, and 
+! allows the user to find the 10 best words in the dictionary according to
+! four criteria: (1) minimax, (2) mean group size, (3) number of 1's, and
 ! (4) number of 1's and 2's.
-! 
+!
 !October 3, 2023. Modified the program so that it when it gives the grouping
 ! results, it also gives the grouping distribution.
 !
@@ -23,27 +23,27 @@
 ! of a proposed word against the remaining possible words, it groups together
 ! results that are alike.
 !
-!!March 27, 2023.  Expand the "all" list to over 12,000 words, so I had to 
+!!March 27, 2023.  Expand the "all" list to over 12,000 words, so I had to
 ! change the dimension statements to handle that.  Also, the list is now
 ! in all lowercase letters, so I had to do the "cap check" on the entire list.
 !
 !October 27, 2022. Modified the program to provide the user with an option
-! to evaluate the list of possible words by showing what the wordle output 
+! to evaluate the list of possible words by showing what the wordle output
 ! would be if you give the program a word and it treats each word in the list
 ! as the correct word. That way you can see if a given word can differentiate among
 ! all the possible words as a throw-away word.  I might restrict this option to
-! only "short" lists, but I'm not sure how short "short" should be.  Logic would 
-! say that the list should be no longer than 32 because 2^5 is 32.  Practically, 
+! only "short" lists, but I'm not sure how short "short" should be.  Logic would
+! say that the list should be no longer than 32 because 2^5 is 32.  Practically,
 ! I would guess that 20 might be a good cut-off. But, then again, there are often
-! words in the list that I think are not likely.  That is why a separate program 
+! words in the list that I think are not likely.  That is why a separate program
 ! to do this is also something that I might do.  So, I think I'll restrict it to
 ! 20, but also have a separate program where a person can input words.
-! 
+!
 !October 24, 2022. Modified the program to print out the letter distribution
-! among the remaining words.  Prints out how many words have an A, 
+! among the remaining words.  Prints out how many words have an A,
 ! how many have a B, how many have a C, etc.
 !
-!October 22, 2022. Modified the program to provide the user the option of 
+!October 22, 2022. Modified the program to provide the user the option of
 ! updating "wordle_list_used.txt" by supplying the winning word.
 !
 !October 8, 2022.  Program to help me save time looking up words for Wordle.
@@ -93,9 +93,9 @@ CHARACTER*1 output_actual(10,5)
 ! ALL(*,*) are all of the 12,917 5-letter words in the dictionary.
 ! proposed_word(j,i) is the value of the letter in the i^th position for the word proposed on Try j.
 ! output_actual(j,i) is the wordle feedback for the i^th position for the worde proposed on Try j.
-! pretend_prop_word(5) is used for evaluating pretend proposed words 
-! output(15000,5) is the variable that stores the results for comparing a proposed word to the 
-!  remaining possible wordle words (up to 15,000 of them) to see what the wordle output would be 
+! pretend_prop_word(5) is used for evaluating pretend proposed words
+! output(15000,5) is the variable that stores the results for comparing a proposed word to the
+!  remaining possible wordle words (up to 15,000 of them) to see what the wordle output would be
 !  like if each possible word were the correct wordle word.
 
 CHARACTER*1 prop_word_max_t10(20,5), prop_word_mean_t10(20,5)
@@ -112,9 +112,9 @@ CHARACTER*60 OUT_LABELS1,OUT_LABELS2,OUT_LABELS3,OUT_LABELS4
 
 INTEGER IS_MUST(5)
 CHARACTER*1 ML(5)
-! IS_MUST(i)=1, means that a Must exists for Position i. 
-! IS_MUST(i)=0, means that a Must does not exist for Letter i. 
-! When IS_MUST(i)=1, then ML(i)= the value the letter must have for position i. 
+! IS_MUST(i)=1, means that a Must exists for Position i.
+! IS_MUST(i)=0, means that a Must does not exist for Letter i.
+! When IS_MUST(i)=1, then ML(i)= the value the letter must have for position i.
 ! When IS_MUST(i)=0, then ML(i)=' '.  a blank character.
 
 INTEGER POSSIBLE(15000)
@@ -124,9 +124,9 @@ INTEGER POSSIBLE(15000)
 OPEN(unit=1,file='wordle_list_all.txt')
 
 i=0
-do 
+do
 	i=i+1
-	read(1,11,end=9) (W(i,j), j=1,5) 
+	read(1,11,end=9) (W(i,j), j=1,5)
         POSSIBLE(i)=1
 	do j=1,5
 		call cap_check(w(i,j))
@@ -146,8 +146,8 @@ CLOSE(1)
 OPEN(unit=1,file='wordle_list_used.txt')
 
 i=1
-do 
-	read(1,11,end=99) (USED(i,j), j=1,5) 
+do
+	read(1,11,end=99) (USED(i,j), j=1,5)
 	i=i+1
 
 enddo
@@ -159,7 +159,7 @@ CLOSE(1)
 
 !Read in all the dictionary of 5-letter words
 OPEN(unit=1,file='word_list_all.txt')
- 
+
 i=1
 do
 	read(1,11,end=999) (ALL(i,j), j=1,5)
@@ -174,7 +174,7 @@ count_all = i-1
 
 write(*,*) 'number of all possible 5-letter words read in = ',count_all
 
-!At this point, may as well reduce the POSSIBLE words 
+!At this point, may as well reduce the POSSIBLE words
 !by taking away the words that have already been used.
 !skip this step if the number of used words is zero.
 
@@ -194,12 +194,12 @@ do i=1,count_wordle
 				endif
 			55 continue
 			!if we make it this far with j=5, then the word has already been used
-			if(j.eq.5) then 
+			if(j.eq.5) then
 				POSSIBLE(i)=0
 				!go to the next value of i
 				go to 75
 			endif
-			enddo				
+			enddo
 		65 continue
 		enddo
 	endif
@@ -248,7 +248,7 @@ write(*,*) '               position if it appears in some other position'
 	endif
 
 enddo
-!At this point we can figure out all the remaining possible words by applying the proposed word to every 
+!At this point we can figure out all the remaining possible words by applying the proposed word to every
 !POSSIBLE(i)=1 word in the wordle dictionary and see which words have the same output as the actual wordle output.
 !Any word that does not have the same output will be marked as POSSIBLE(i)=0.
 
@@ -289,7 +289,7 @@ do i=1,count_wordle
 					call lower_case_check(proposed_word(try_count,k))
 					output(i,k) = proposed_word(try_count,k)
 					position_check_2(j) = 1
-					go to 135		
+					go to 135
 				endif
 				145 continue
 			enddo
@@ -308,7 +308,7 @@ do i=1,count_wordle
 enddo
 
 
-!Now we can print out all the wordle words with POSSIBLE(i)=1 
+!Now we can print out all the wordle words with POSSIBLE(i)=1
 !and count the number of possible words.
 
 kount_possible = 0
@@ -359,7 +359,7 @@ chk_N = 0
 chk_O = 0
 chk_P = 0
 chk_Q = 0
-chk_R = 0 
+chk_R = 0
 chk_S = 0
 chk_T = 0
 chk_U = 0
@@ -370,7 +370,7 @@ chk_Y = 0
 chk_Z = 0
 	if(POSSIBLE(i).eq.1) then
 		kount_possible = kount_possible + 1
-		write(*,*) (W(i,j), j=1,5) 
+		write(*,*) (W(i,j), j=1,5)
 		do j=1,5
 			if(W(i,j).eq.'A') then
 				if(chk_A.eq.0) then
@@ -593,7 +593,7 @@ write(*,*) ' number of possible words = ', kount_possible
 write(*,*) ' '
 write(*,*) ' Step 1 of the evaluation phase:'
 write(*,*) ' '
-write(*,*) ' Do you want the program to provide a list of how many words have each alphabet letter?' 
+write(*,*) ' Do you want the program to provide a list of how many words have each alphabet letter?'
 write(*,*) ' (if a letter does not appear in the list, that means there are zero words with that letter)'
 write(*,*) ' Enter 1 for Yes'
 write(*,*) ' Enter 0 for No'
@@ -634,10 +634,10 @@ write(*,*) ' '
 write(*,*) ' Step 2 of the evaluation phase:'
 write(*,*) ' '
 write(*,*) ' Do you want the program to report summary statistics for an evaluation '
-write(*,*) ' of all possible 5-letter words against all the possible wordle words?' 
+write(*,*) ' of all possible 5-letter words against all the possible wordle words?'
 write(*,*) ' '
 write(*,*) '      It will report the Top 10 words according to each of four criteria:'
-write(*,*) '      (1) max group size,' 
+write(*,*) '      (1) max group size,'
 write(*,*) '      (2) mean grp size,'
 write(*,*) '      (3) no. of size-1 grps, and '
 write(*,*) '      (4) no. of 1- & 2-sized grps'
@@ -655,7 +655,7 @@ endif
 write(*,*) ' '
 write(*,*) ' Step 3 of the evaluation phase:'
 write(*,*) ' '
-write(*,*) ' Do you want to propose a word to get a detailed evaluation against all the possible wordle words.' 
+write(*,*) ' Do you want to propose a word to get a detailed evaluation against all the possible wordle words.'
 write(*,*) ' Enter 1 for Yes'
 write(*,*) ' Enter 0 for No'
 read(*,*) idec_step3
@@ -743,7 +743,7 @@ do i=1,count_wordle
 					call lower_case_check(pretend_prop_word(k))
 					output(i,k) = pretend_prop_word(k)
 					position_check_2(j) = 1
-					go to 175		
+					go to 175
 				endif
 				155 continue
 			enddo
@@ -756,7 +756,7 @@ if(idec_step3.eq.1) then
 !now print out the evaluations for the POSSIBLE(i) words
 
 	write(*,*) 'For the wordle output below, '
-	write(*,*) '  an asterisk (*) corresponds to a letter with no match' 
+	write(*,*) '  an asterisk (*) corresponds to a letter with no match'
 	write(*,*) '  a lower case letter corresponds to a matching letter that is in the wrong position'
 	write(*,*) '  and a capital letter corresponds to a matching letter that is in the right position'
 	write(*,*) ' '
@@ -765,7 +765,7 @@ endif
 31 format(' When the wordle word = possible word ',5a1,', the wordle output for the proposed word = ',5a1)
 
 do i=1,count_wordle
-	istar(i) = 0 
+	istar(i) = 0
 enddo
 
 kount_possible = 0
@@ -778,19 +778,19 @@ enddo
 do i=1,count_wordle
 	if(POSSIBLE(i).eq.0) goto 195
 	kount_possible = kount_possible + 1
-		
+
 	if(istar(i).eq.0) then
 		if(idec_step3.eq.1) then
 			write(*,31) (W(i,j), j=1,5), (output(i,j), j=1,5)
 		endif
-		
+
 		grp_number = grp_number + 1
 		grp_count(grp_number) = grp_count(grp_number) + 1
 		if(i.eq.count_wordle) goto 205
 	else
 		goto 195
 	endif
-		
+
 	do ichk=i+1,count_wordle
 		if(POSSIBLE(ichk).eq.0) goto 215
 		do j=1,5
@@ -802,13 +802,13 @@ do i=1,count_wordle
 		if(idec_step3.eq.1) then
 			write(*,31) (W(ichk,j), j=1,5), (output(ichk,j), j=1,5)
 		endif
-			
+
 		grp_count(grp_number) = grp_count(grp_number) + 1
 		istar(ichk)=1
 215 		continue
 	enddo
 195 	continue
-		
+
 enddo
 205 continue
 
@@ -878,14 +878,14 @@ if(idec_step3.eq.1) then
 
 	write(*,*) " Group Size Distribution:"
 	DIST_LABEL1=' Group Size:     1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19 >=20'
-	DIST_LABEL2=' No. of groups:'   
+	DIST_LABEL2=' No. of groups:'
 	DIST_LABEL3=' No. of words: '
 
 	write(*,*) DIST_LABEL1
 	write(*,41) DIST_LABEL2, (kount(i), i=1,20)
 41 format(a15,20(1x,i3))
 	write(*,41) DIST_LABEL3, (i*kount(i), i=1,20)
-	write(*,51) mean_size 
+	write(*,51) mean_size
 51 format(' average group size for a randomly chosen group = ', f6.1)
 	write(*,61) mean_grp_size
 61 format(' average group size for a randomly chosen word  = ', f6.1)
@@ -907,10 +907,10 @@ if(idec_step2.eq.1) then
 
 	do k=1,10
 
-		if(max_size.le.max_t10(k)) then 
+		if(max_size.le.max_t10(k)) then
 
 			if(k.eq.10) goto 275
-				
+
 			do k2=10,k+1,-1
 				max_t10(k2) = max_t10(k2-1)
 				max_t10_mean(k2) = max_t10_mean(k2-1)
@@ -992,8 +992,8 @@ if(idec_step2.eq.1) then
 				prop_word_ones_t10(k,j) = pretend_prop_word(j)
 			enddo
 			goto 255
-		endif	
-	enddo	
+		endif
+	enddo
 255	continue
 
 	do k=1,10
@@ -1023,7 +1023,7 @@ if(idec_step2.eq.1) then
 			enddo
 			goto 265
 		endif
-	enddo			
+	enddo
 
 265 	continue
 
@@ -1041,7 +1041,7 @@ if(idec_step2.eq.1) then
 	OUT_LABELS1='            Proposed  Max grp   Mean grp  no. of   no. of  '
 	OUT_LABELS2=' Criterion    Word    size       size      1s      1s + 2s '
 	OUT_LABELS3=' ---------   -----    ----      ------   ------   ---------'
-	OUT_LABELS4='-----------------------------------------------------------'                       
+	OUT_LABELS4='-----------------------------------------------------------'
 
 	write(*,71) OUT_LABELS1
 	write(*,71) OUT_LABELS2
@@ -1069,7 +1069,7 @@ if(idec_step2.eq.1) then
 	write(*,71) OUT_LABELS4
 
 	do k=1,10
-		write(*,81) Crit4, (prop_word_ones_twos_t10(k,j), j=1,5), ones_twos_t10_max(k), ones_twos_t10_mean(k), ones_twos_t10_ones(k), & 
+		write(*,81) Crit4, (prop_word_ones_twos_t10(k,j), j=1,5), ones_twos_t10_max(k), ones_twos_t10_mean(k), ones_twos_t10_ones(k), &
 		ones_twos_t10(k)
 	enddo
 
@@ -1082,7 +1082,7 @@ if(idec_step2.eq.1) then
 	goto 345
 elseif(idec_step3.eq.1) then
 	write(*,*) ' '
-	write(*,*) ' Do you want to evaluate another proposed word?' 
+	write(*,*) ' Do you want to evaluate another proposed word?'
 	write(*,*) ' Enter 1 for Yes'
 	write(*,*) ' Enter 0 for No'
 	read(*,*) idec_step3
@@ -1101,7 +1101,7 @@ write(*,*) ' Enter 0 for No'
 read(*,*) idec
 if(idec.eq.1) go to 15
 
-write(*,*) ' ' 
+write(*,*) ' '
 write(*,*) ' Do you want to update the list of the used wordle words with the winning word?'
 write(*,*) ' Enter 1 for Yes'
 write(*,*) ' Enter 0 for No'

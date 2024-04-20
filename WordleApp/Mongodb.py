@@ -121,13 +121,22 @@ class Wordle_db:
         collection = db['all_wordle_words']
         return list(collection.find({}, {'_id': False}))
 
+    def get_all_words(self):
+        if self.client is None:
+            print('no mongodb client found')
+            return []
+        db = self.client['Wordle_db']
+        collection = db['all_words']
+        return list(collection.find({}, {'_id': False}))
+
 
 
 
 if __name__ == "__main__":
     load_dotenv()
     # parse a txt and use the add_words function
+    # see this link for updating used words: https://www.fiveforks.com/wordle/
     wordle_db = Wordle_db()
-    wordle_db.reset_used_words()
-    wordle_db.add_used_words(wordle_db.parse_used_words('used_words.txt'))
+    #wordle_db.reset_used_words()
+    #wordle_db.add_used_words(wordle_db.parse_used_words('wordle_list_used.txt'))
 
