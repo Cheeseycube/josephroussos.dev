@@ -13,8 +13,8 @@ import plotly.io as pio
 import plotly.graph_objects as go
 from datetime import timedelta
 from WordleApp.Wordle import *
+from Cycling.queryBuilder import queryBuilder
 from datetime import datetime
-from CBA-Cycling.queryBuilder import queryBuilder
 import traceback
 
 # intitializing the app
