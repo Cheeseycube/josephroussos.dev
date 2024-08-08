@@ -14,7 +14,7 @@ import plotly.graph_objects as go
 from datetime import timedelta
 from WordleApp.Wordle import *
 from datetime import datetime
-from Cycling.queryBuilder import queryBuilder
+from CBA-Cycling.queryBuilder import queryBuilder
 import traceback
 
 # intitializing the app
@@ -620,9 +620,6 @@ def serve_docs(path):
     return send_from_directory(site_dir, path)
 
 ####################### Cycling #######################
-
-
-
 
 
 
