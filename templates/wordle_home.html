@@ -56,8 +56,7 @@
             <div class="letter-row">
                 <div class="letter-box">
                     <div class="dropdown">
-                      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu1" data-bs-toggle="dropdown" aria-expanded="false">
-                      </button>
+                      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu1" data-bs-toggle="dropdown" aria-expanded="false"></button>
                       <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
                         <li><button class="dropdown-item" type="button" value="-1" onclick="setColor('gray', 0)" style="background: grey;"></button></li>
                         <li><button class="dropdown-item" type="button" value="0" onclick="setColor('#b89c3c', 0)" style="background: #b89c3c;"></button></li>
@@ -224,6 +223,8 @@
             $('#submit_button').on('click',function(){
                 // on click, enable loading bar
                 let loadingBar = document.getElementById('loading_spinner')
+                let remaining_words_holder = document.getElementsByClassName("remaining_words")[0]
+                remaining_words_holder.textContent = ""
                 loadingBar.style.display = "block"
 
                 // jquery ajax callback
@@ -242,8 +243,6 @@
                         if (data != null) {
                             let dataString = JSON.stringify(data)
                             let dataDict = JSON.parse(dataString)
-                            let remaining_words_holder = document.getElementsByClassName("remaining_words")[0]
-                            remaining_words_holder.textContent = ""
                             remaining_words = dataDict['matches']
                             remaining_words.forEach((word) => {
                                 let li = document.createElement("li");

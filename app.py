@@ -167,13 +167,9 @@ def chess(pageName=None, gameID=None):
 ####################### Chess ########################
 
 
-
-
-
 ####################### Wordle #######################
 @app.route('/wordle', methods=["GET", "POST"])
 def wordle():
-    # maybe do something
     return render_template('wordle_home.html')
 
 @app.route('/wordle_update', methods=['GET', 'POST'])
@@ -236,6 +232,15 @@ def letter_distribution_plot(words):
 
     return fig
 ####################### Wordle #######################
+
+
+####################### Cycling #######################
+@app.route('/cycling', methods=["GET", "POST"])
+def cycling_home():
+    return 'cycling!'
+
+####################### Cycling #######################
+
 
 
 
