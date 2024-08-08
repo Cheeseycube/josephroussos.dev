@@ -45,6 +45,9 @@ def convert_seconds(seconds):
         seconds = (seconds % 3600) % 60
         return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
+@app.errorhandler(500)
+def error_500_page(e):
+    return render_template('error_500_page.html', error=traceback.format_exc())
 
 @app.route('/')
 def index():
@@ -274,7 +277,7 @@ def cycling_home():
             flash('Error Message:')
             flash(f'{traceback.format_exc()}', 'error')
             team_classes, race_classes, parcour_types = query_builder.query_template_arguments()
-            return render_template('index.html',
+            return render_template('cycling_home.html',
                                    team_classes=team_classes,
                                    race_classes=race_classes,
                                    parcour_types=parcour_types,
@@ -292,7 +295,7 @@ def cycling_home():
         flash(f'Successfully applied the following filters:')
         for filterDict in filters:
             flash(str(filterDict))
-        return render_template('index.html',
+        return render_template('cycling_home.html',
                                team_classes=team_classes,
                                race_classes=race_classes,
                                parcour_types=parcour_types,
@@ -303,7 +306,7 @@ def cycling_home():
 
     query_builder = queryBuilder()
     team_classes, race_classes, parcour_types = query_builder.query_template_arguments()
-    return render_template("index.html",
+    return render_template("cycling_home.html",
                            team_classes=team_classes,
                            race_classes=race_classes,
                            parcour_types=parcour_types,
@@ -626,6 +629,5 @@ def serve_docs(path):
 if __name__ == '__main__':
     load_dotenv()
     load_dotenv('/var/www/josephroussos.dev/.env')
-    # TODO: re-enable the Chess App once the database is refactored to Postgres
     #ChessDB.makeConnectionPool(4)
     app.run(port=8080, debug=False)

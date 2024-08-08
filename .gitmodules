@@ -1,6 +1,3 @@
-[submodule "CBA-Cycling"]
-	path = CBA-Cycling
-	url = https://github.com/Cheeseycube/CBA-Cycling.git
 [submodule "Cycling"]
 	path = Cycling
-	url = https://github.com/Cheeseycube/CBA-Cycling.git
+	url = git@github.com:Cheeseycube/CBA-Cycling.git
