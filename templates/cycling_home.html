@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--cycling home page-->
+        <title>PCS Filter Tool</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- bootstrap -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+        <!--bootstrap theme (pulse theme)-->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/pulse/bootstrap.min.css" integrity="sha384-L7+YG8QLqGvxQGffJ6utDKFwmGwtLcCjtwvonVZR/Ba2VzhpMwBz51GaXnUsuYbj" crossorigin="anonymous">
+        <!-- jquery-->
+        <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    </head>
+
+    <style>
+        h1 {text-align: center;}
+        p {text-align: center;}
+        label {font-weight: bold; margin: auto}
+        .container-fluid{
+            display: flex;
+            justify-content: center;
+        }
+        .col-sm-2{
+            margin: auto;
+        }
+        .col-sm-3{
+            margin: auto;
+        }
+        .col-sm-4{
+            margin: auto;
+        }
+        .alert_error {
+          background-color: #f2dede;
+          border: 1px solid #ebccd1;
+          color: #a94442;
+          font-size: 24px;
+          padding: 10px;
+        }
+        .alert_message {
+          background-color: greenyellow;
+          border: 1px solid black;
+          color: green;
+          font-size: 24px;
+          padding: 10px;
+        }
+    </style>
+    <body>
+        {% with errors = get_flashed_messages(category_filter=["error"]) %}
+            {% if errors %}
+                <div class="alert_error">
+                    {% for message in errors %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% with messages = get_flashed_messages(category_filter=["message"]) %}
+            {% if messages %}
+                <div class="alert_message">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% include 'navbar.html' %}
+        <h1>PCS Filter Tool</h1>
+        <div class="container-fluid text-center">
+            <form action="{{url_for('index')}}" method="post">
+                <div class="form-group row no-gutters">
+                    <label for="startyear" class="col-sm-2">Start</label>
+                    <div class="col-sm-4">
+                        <input type="number" min="2000" step="1" class="form-control" id="startyear" name="startyear" value="{{request.form['startyear'] if request.form['startyear'] else last_year}}" required>
+                    </div>
+                    <label for="endyear" class="col-sm-2" style="margin: auto">End</label>
+                    <div class="col-sm-4">
+                        <input type="number" min="2000" class="form-control" id="endyear" name="endyear" value="{{request.form['endyear'] if request.form['endyear'] else current_year}}" required>
+                    </div>
+                </div>
+                <div class="form-group row no-gutters">
+                    <label for="rank" class="col-sm-2">Rank</label>
+                    <div class="col-sm-2">
+                        <input type="number" min="1" step="1" class="form-control" id="rank" name="rank" value="{{request.form['rank']}}">
+                    </div>
+                    <div class="col-sm-2">
+                        <!-- class="sr-only" hides an element from everything except screen readers -->
+                        <label for="rank_filter" class="sr-only">Rank Filter</label>
+                        <select class="form-control" id="rank_filter" name="rank_filter" onchange="toggleSecondInput('rank')">
+                            <option value="=" {{"selected='selected'" if request.form['rank_filter'] == '=' else ''}}>=</option>
+                            <option value=">=" {{"selected='selected'" if request.form['rank_filter'] == '>=' else ''}}>>=</option>
+                            <option value="<=" {{"selected='selected'" if request.form['rank_filter'] == '<=' else ''}}><=</option>
+                            <option value="between" {{"selected='selected'" if request.form['rank_filter'] == 'between' else ''}}>Between</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-2" id="rank-second-input-container" style="display: none;">
+                        <input type="number" min="1" step="1" class="form-control" id="rank_end" name="rank_end" value="{{request.form['rank_end']}}">
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="rank_year" class="sr-only">Rank Year</label>
+                        <input type="number" min="2000" step="1" value="{{request.form['rank_year'] if request.form['rank_year'] else current_year}}"
+                               class="form-control" id="rank_year" name="rank_year"
+                               data-bs-toggle="tooltip" title="Season to compare rank">
+                    </div>
+                </div>
+                <div class="form-group row no-gutters">
+                    <label for="age" class="col-sm-2">Age</label>
+                    <div class="col-sm-3">
+                        <input type="number" min="1" step="1" class="form-control" id="age" name="age" value="{{request.form['age']}}">
+                    </div>
+                    <div class="col-sm-2">
+                        <!-- class="sr-only" hides an element from everything except screen readers -->
+                        <label for="age_filter" class="sr-only">Age Filter</label>
+                        <select class="form-control" id="age_filter" name="age_filter" onchange="toggleSecondInput('age')">
+                            <option value="=" {{"selected='selected'" if request.form['age_filter'] == '=' else ''}}>=</option>
+                            <option value=">=" {{"selected='selected'" if request.form['age_filter'] == '>=' else ''}}>>=</option>
+                            <option value="<=" {{"selected='selected'" if request.form['age_filter'] == '<=' else ''}}><=</option>
+                            <option value="between" {{"selected='selected'" if request.form['age_filter'] == 'between' else ''}}>Between</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-3" id="age-second-input-container" style="display: none;">
+                        <input type="number" min="1" step="1" class="form-control" id="age_end" name="age_end" value="{{request.form['age_end']}}">
+                    </div>
+                </div>
+                <div class="form-group row no-gutters">
+                    <label for="placing" class="col-sm-2">Placing</label>
+                    <div class="col-sm-3">
+                        <input type="number" min="1" class="form-control" id="placing" name="placing" value="{{request.form['placing']}}">
+                    </div>
+                    <div class="col-sm-2">
+                        <!-- class="sr-only" hides an element from everything except screen readers -->
+                        <label for="placing_filter" class="sr-only">Placing Filter</label>
+                        <select class="form-control" id="placing_filter" name="placing_filter" onchange="toggleSecondInput('placing')">
+                            <option value="=" {{"selected='selected'" if request.form['placing_filter'] == '=' else ''}}>=</option>
+                            <option value=">=" {{"selected='selected'" if request.form['placing_filter'] == '>=' else ''}}>>=</option>
+                            <option value="<=" {{"selected='selected'" if request.form['placing_filter'] == '<=' else ''}}><=</option>
+                            <option value="between" {{"selected='selected'" if request.form['placing_filter'] == 'between' else ''}}>Between</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-3" id="placing-second-input-container" style="display: none;">
+                        <input type="number" min="1" class="form-control" id="placing_end" name="placing_end" value="{{request.form['placing_end']}}">
+                    </div>
+                </div>
+                <div class="form-group row no-gutters">
+                    <label for="pcs_points" class="col-sm-2"> Scored PCS Points</label>
+                    <div class="col-sm-3">
+                        <input type="number" min="0" class="form-control" id="pcs_points" name="pcs_points" value="{{request.form['pcs_points']}}">
+                    </div>
+                    <div class="col-sm-2">
+                        <!-- class="sr-only" hides an element from everything except screen readers -->
+                        <label for="pcs_points_filter" class="sr-only">PCS Points Filter</label>
+                        <select class="form-control" id="pcs_points_filter" name="pcs_points_filter" onchange="toggleSecondInput('pcs_points')">
+                            <option value="=" {{"selected='selected'" if request.form['pcs_points_filter'] == '=' else ''}}>=</option>
+                            <option value=">=" {{"selected='selected'" if request.form['pcs_points_filter'] == '>=' else ''}}>>=</option>
+                            <option value="<=" {{"selected='selected'" if request.form['pcs_points_filter'] == '<=' else ''}}><=</option>
+                            <option value="between" {{"selected='selected'" if request.form['pcs_points_filter'] == 'between' else ''}}>Between</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-3" id="pcs_points-second-input-container" style="display: none;">
+                        <input type="number" min="0" class="form-control" id="pcs_points_end" name="pcs_points_end" value="{{request.form['pcs_points_end']}}">
+                    </div>
+                </div>
+                <div class="form-group row no-gutters">
+                    <label for="uci_points" class="col-sm-2"> Scored UCI Points</label>
+                    <div class="col-sm-3">
+                        <input type="number" min="0" class="form-control" id="uci_points" name="uci_points" value="{{request.form['uci_points']}}">
+                    </div>
+                    <div class="col-sm-2">
+                        <!-- class="sr-only" hides an element from everything except screen readers -->
+                        <label for="uci_points_filter" class="sr-only">UCI Points Filter</label>
+                        <select class="form-control" id="uci_points_filter" name="uci_points_filter" onchange="toggleSecondInput('uci_points')">
+                            <option value="=" {{"selected='selected'" if request.form['uci_points_filter'] == '=' else ''}}>=</option>
+                            <option value=">=" {{"selected='selected'" if request.form['uci_points_filter'] == '>=' else ''}}>>=</option>
+                            <option value="<=" {{"selected='selected'" if request.form['uci_points_filter'] == '<=' else ''}}><=</option>
+                            <option value="between" {{"selected='selected'" if request.form['uci_points_filter'] == 'between' else ''}}>Between</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-3" id="uci_points-second-input-container" style="display: none;">
+                        <input type="number" min="0" class="form-control" id="uci_points_end" name="uci_points_end" value="{{request.form['uci_points_end']}}">
+                    </div>
+                </div>
+                <div class="form-group row no-gutters">
+                    <label for="pcs_points_trend" class="col-sm-2"> PCS Points Trend</label>
+                    <div class="col-sm-10">
+                        <select class="form-control" id="pcs_points_trend" name="pcs_points_trend">
+                            <option value="" {{"selected='selected'" if request.form['pcs_points_trend'] == '' else ''}}>None</option>
+                            <option value="increasing" {{"selected='selected'" if request.form['pcs_points_trend'] == 'increasing' else ''}}>Increasing</option>
+                            <option value="decreasing" {{"selected='selected'" if request.form['pcs_points_trend'] == 'decreasing' else ''}}>Decreasing</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row no-gutters">
+                    <label for="uci_points_trend" class="col-sm-2"> UCI Points Trend</label>
+                    <div class="col-sm-10">
+                        <select class="form-control" id="uci_points_trend" name="uci_points_trend">
+                            <option value="" {{"selected='selected'" if request.form['uci_points_trend'] == '' else ''}}>None</option>
+                            <option value="increasing" {{"selected='selected'" if request.form['uci_points_trend'] == 'increasing' else ''}}>Increasing</option>
+                            <option value="decreasing" {{"selected='selected'" if request.form['uci_points_trend'] == 'decreasing' else ''}}>Decreasing</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row no-gutters">
+                    <label for="gc_filter" class="col-sm-2">General Classification</label>
+                    <div class="col-sm-10">
+                        <select class="form-control" id="gc_filter" name="gc_filter">
+                            <option value="include" {{"selected='selected'" if request.form['gc_filter'] == 'include' else ''}}>Include</option>
+                            <option value="exclude" {{"selected='selected'" if request.form['gc_filter'] == 'exclude' else ''}}>Exclude</option>
+                            <option value="include-exclusive" {{"selected='selected'" if request.form['gc_filter'] == 'include-exclusive' else ''}}>Include (Exclusively)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row no-gutters">
+                    <label for="profile_score" class="col-sm-2">Profile Score</label>
+                    <div class="col-sm-3">
+                        <input type="number" class="form-control" id="profile_score" name="profile_score" value="{{request.form['profile_score']}}">
+                    </div>
+                    <div class="col-sm-2">
+                        <!-- class="sr-only" hides an element from everything except screen readers -->
+                        <label for="profile_score_filter" class="sr-only">Profile Score Filter</label>
+                        <select class="form-control" id="profile_score_filter" name="profile_score_filter" onchange="toggleSecondInput('profile_score')">
+                            <option value="=" {{"selected='selected'" if request.form['profile_score_filter'] == '=' else ''}}>=</option>
+                            <option value=">=" {{"selected='selected'" if request.form['profile_score_filter'] == '>=' else ''}}>>=</option>
+                            <option value="<=" {{"selected='selected'" if request.form['profile_score_filter'] == '<=' else ''}}><=</option>
+                            <option value="between" {{"selected='selected'" if request.form['profile_score_filter'] == 'between' else ''}}>Between</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-3" id="profile-score-second-input-container" style="display: none;">
+                        <input type="number" min="1" class="form-control" id="profile_score_end" name="profile_score_end" value="{{request.form['profile_score_end']}}">
+                    </div>
+                </div>
+                <div class="form-group row no-gutters">
+                    <label for="startlistqualityscore" class="col-sm-2">Startlist Quality Score</label>
+                    <div class="col-sm-3">
+                        <input type="number" class="form-control" id="startlistqualityscore" name="startlist_quality_score" value="{{request.form['startlist_quality_score']}}">
+                    </div>
+                    <div class="col-sm-2">
+                        <!-- class="sr-only" hides an element from everything except screen readers -->
+                        <label for="startlistqualityscore_filter" class="sr-only">Startlist Quality Score Filter</label>
+                        <select class="form-control" id="startlistqualityscore_filter" name="startlist_quality_score_filter" onchange="toggleSecondInput('startlistqualityscore')">
+                            <option value="=" {{"selected='selected'" if request.form['startlist_quality_score_filter'] == '=' else ''}}>=</option>
+                            <option value=">=" {{"selected='selected'" if request.form['startlist_quality_score_filter'] == '>=' else ''}}>>=</option>
+                            <option value="<=" {{"selected='selected'" if request.form['startlist_quality_score_filter'] == '<=' else ''}}><=</option>
+                            <option value="between" {{"selected='selected'" if request.form['startlist_quality_score_filter'] == 'between' else ''}}>Between</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-3" id="startlistqualityscore-second-input-container" style="display: none;">
+                        <input type="number" min="1" class="form-control" id="startlistqualityscore_end" name="startlist_quality_score_end" value="{{request.form['startlist_quality_score_end']}}">
+                    </div>
+                </div>
+                <div class="form-group row no-gutters">
+                    <label for="current_team_classes" class="col-sm-2">Current Team Classes</label>
+                    <div class="col-sm-10">
+                        <select class="form-select" id="current_team_classes" name="current_team_classes" size={{team_classes|length}} data-bs-toggle="tooltip" title="Hold Ctrl/Cmd to select multiple" multiple>
+                            {% for class in team_classes %}
+                                <option value='{{class}}' {{"selected='selected'" if class in request.form.getlist('current_team_classes') else ''}}>{{class}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row no-gutters">
+                    <label for="past_teams_classes" class="col-sm-2">Past Teams' Classes</label>
+                    <div class="col-sm-10">
+                        <select class="form-select" id="past_teams_classes" name="past_teams_classes" size={{team_classes|length}} data-bs-toggle="tooltip" title="Hold Ctrl/Cmd to select multiple" multiple>
+                            {% for class in team_classes %}
+                                <option value='{{class}}' {{"selected='selected'" if class in request.form.getlist('past_teams_classes') else ''}}>{{class}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-2-mr-auto">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="allow_other_teams" name="allow_other_teams" {% if request.form.get('allow_other_teams') %} checked {% endif %}>
+                            <label class="form-check-label" for="allow_other_teams">Allow other Team Classes</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row no-gutters">
+                    <label for="race_classes" class="col-sm-2">Race Classes</label>
+                    <div class="col-sm-10">
+                        <select class="form-select" id="race_classes" name="race_classes" size={{race_classes|length}} data-bs-toggle="tooltip" title="Hold Ctrl/Cmd to select multiple" multiple>
+                            {% for class in race_classes %}
+                                <option value='{{class}}' {{"selected='selected'" if class in request.form.getlist('race_classes') else ''}}>{{class}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row no-gutters">
+                    <label for="parcour_types" class="col-sm-2">Parcour Types</label>
+                    <div class="col-sm-10">
+                        <select class="form-select" id="parcour_types" name="parcour_types" size={{parcour_types|length}} data-bs-toggle="tooltip" title="Hold Ctrl/Cmd to select multiple" multiple>
+                            {% for type in parcour_types %}
+                                <option value='{{type}}' {{"selected='selected'" if type in request.form.getlist('parcour_types') else ''}}>{{type}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-left: 3rem">Submit</button>
+            </form>
+        </div>
+        <table style="text-align: center; justify-content: center; margin: auto">
+            {% if rider_info|length > 0 %}
+                <thead>
+                    <tr>
+                        <th>Rider</th>
+                        <th>Nationality</th>
+                        <th>Curr Team</th>
+                        <th>Birthdate</th>
+                        <th>Age</th>
+                    </tr>
+                </thead>
+            {% endif %}
+
+            {% for row in rider_info %}
+                <tr>
+                    <td><a href="https://www.procyclingstats.com/{{row['rider_url']}}" target="_blank">{{row['name']}}</a></td>
+                    <td>{{row['nationality']}}</td>
+                    <td>{{row['current_team']}}</td>
+                    <td>{{row['birthdate']}}</td>
+                    <td>{{row['age']}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        <script>
+            // enable tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+              return new bootstrap.Tooltip(tooltipTriggerEl)
+            })
+
+            // function to enable between functionality
+            function toggleSecondInput(givenField) {
+                var filter = null;
+                var secondInputContainer = null;
+                switch(givenField) {
+                    case 'placing':
+                        filter = document.getElementById("placing_filter").value;
+                        secondInputContainer = document.getElementById("placing-second-input-container");
+                        break;
+                    case 'age':
+                        filter = document.getElementById("age_filter").value;
+                        secondInputContainer = document.getElementById("age-second-input-container");
+                        break;
+                    case 'profile_score':
+                        filter = document.getElementById("profile_score_filter").value;
+                        secondInputContainer = document.getElementById("profile-score-second-input-container");
+                        break;
+                    case 'startlistqualityscore':
+                        filter = document.getElementById("startlistqualityscore_filter").value;
+                        secondInputContainer = document.getElementById("startlistqualityscore-second-input-container");
+                        break;
+                    case 'pcs_points':
+                        filter = document.getElementById("pcs_points_filter").value;
+                        secondInputContainer = document.getElementById("pcs_points-second-input-container");
+                        break;
+                    case 'uci_points':
+                        filter = document.getElementById("uci_points_filter").value;
+                        secondInputContainer = document.getElementById("uci_points-second-input-container");
+                        break;
+                    case 'rank':
+                        filter = document.getElementById("rank_filter").value;
+                        secondInputContainer = document.getElementById("rank-second-input-container");
+                        break;
+                    default:
+                        return;
+                }
+                if (filter === "between") {
+                    secondInputContainer.style.display = "block";
+                } else {
+                    secondInputContainer.style.display = "none";
+                }
+            }
+        </script>
+    </body>
+</html>

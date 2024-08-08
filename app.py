@@ -1,8 +1,7 @@
 import json
-
-import pandas as pd
 import plotly.utils
-from flask import Flask, render_template, request, flash, jsonify
+from flask import Flask, render_template, request, flash, send_from_directory
+import os
 import flask
 import ChessApp.ChessDatabase as ChessDB
 import ChessApp.ChessCom as ChessCom
@@ -10,11 +9,13 @@ import secrets
 from dotenv import load_dotenv
 import chess.pgn as chess_pgn
 import io
-import plotly.express as px
 import plotly.io as pio
 import plotly.graph_objects as go
 from datetime import timedelta
 from WordleApp.Wordle import *
+from datetime import datetime
+from Cycling.queryBuilder import queryBuilder
+import traceback
 
 # intitializing the app
 app = Flask(__name__)
@@ -237,7 +238,386 @@ def letter_distribution_plot(words):
 ####################### Cycling #######################
 @app.route('/cycling', methods=["GET", "POST"])
 def cycling_home():
-    return 'cycling!'
+    """
+    Page creation, modification, and controller method
+    """
+    current_year = datetime.today().year
+    last_year = current_year - 1
+    if request.method == 'POST':
+        form_fields = ['startyear', 'endyear', 'placing', 'placing_filter', 'placing_end',
+                       'age', 'age_filter', 'age_end', 'profile_score', 'profile_score_filter',
+                       'profile_score_end', 'startlist_quality_score', 'startlist_quality_score_filter',
+                       'startlist_quality_score_end', 'pcs_points', 'pcs_points_filter',
+                       'pcs_points_end', 'uci_points', 'uci_points_filter', 'uci_points_end',
+                       'pcs_points_trend', 'uci_points_trend', 'allow_other_teams',
+                       'gc_filter', 'rank', 'rank_filter', 'rank_end', 'rank_year'
+                       ]
+        form_list_fields = ['race_classes', 'parcour_types', 'current_team_classes', 'past_teams_classes']
+        all_fields = {}
+        for field in form_fields:
+            value = request.form.get(field)
+            # print(f"{field}: {value}")
+            if value is not None and value != '':
+                all_fields[field] = value
+        for field in form_list_fields:
+            value = request.form.getlist(field)
+            if len(value) > 0:
+                all_fields[field] = value
+        filters = create_filters(all_fields)
+        query_builder = queryBuilder()
+        try:
+            returned_rider_info = query_builder.bigBuilder(filters, debug=True)
+        except Exception:
+            flash('Error applying the following filters:', 'error')
+            for filterDict in filters:
+                flash(str(filterDict), 'error')
+            flash('Error Message:')
+            flash(f'{traceback.format_exc()}', 'error')
+            team_classes, race_classes, parcour_types = query_builder.query_template_arguments()
+            return render_template('index.html',
+                                   team_classes=team_classes,
+                                   race_classes=race_classes,
+                                   parcour_types=parcour_types,
+                                   rider_info=[],
+                                   current_year=current_year,
+                                   last_year=last_year
+                                   )
+
+        rider_info_list = []
+        for row in returned_rider_info:
+            rider_info_list.append({'rider_url': row[0], 'name': row[1],
+                                    'nationality': row[2], 'current_team': row[3],
+                                    'birthdate': row[4], 'age': row[5]})
+        team_classes, race_classes, parcour_types = query_builder.query_template_arguments()
+        flash(f'Successfully applied the following filters:')
+        for filterDict in filters:
+            flash(str(filterDict))
+        return render_template('index.html',
+                               team_classes=team_classes,
+                               race_classes=race_classes,
+                               parcour_types=parcour_types,
+                               rider_info=rider_info_list,
+                               current_year=current_year,
+                               last_year=last_year
+                               )
+
+    query_builder = queryBuilder()
+    team_classes, race_classes, parcour_types = query_builder.query_template_arguments()
+    return render_template("index.html",
+                           team_classes=team_classes,
+                           race_classes=race_classes,
+                           parcour_types=parcour_types,
+                           rider_info=[],
+                           current_year=current_year,
+                           last_year=last_year
+                           )
+
+def create_filters(field_dict: dict) -> list[dict]:
+    """
+    UI field to filter translator method to take the fields selected on the webpage and put the corresponding filter in a list[dict(str, str)] where the keys are the table, value, compare, and column to then give to the sqlBuilder
+
+    Args:
+        field_dict: contains fields selected by user on the webpage
+
+    Returns:
+        filters: contains translated filters to be used in sqlBuilder
+    """
+    filters = []
+    # these are required fields in the form, so they should never be empty
+    race_start_year_filter = {'table': 'race_info', 'column': 'year(date)', 'compare': '>=',
+                              'value': field_dict['startyear']}
+    race_end_year_filter = {'table': 'race_info', 'column': 'year(date)', 'compare': '<=',
+                            'value': field_dict['endyear']}
+    for key in field_dict.keys():
+        match key:
+            case 'gc_filter':
+                match field_dict['gc_filter']:
+                    case 'exclude':
+                        if not has_filter_been_added(race_start_year_filter, filters):
+                            filters.append(race_start_year_filter)
+                        if not has_filter_been_added(race_end_year_filter, filters):
+                            filters.append(race_end_year_filter)
+                        filters.append(
+                            {'table': 'race_info', 'column': 'is_total_results_page', 'compare': '=', 'value': '0'})
+                    case 'include':
+                        pass
+                    case 'include-exclusive':
+                        if not has_filter_been_added(race_start_year_filter, filters):
+                            filters.append(race_start_year_filter)
+                        if not has_filter_been_added(race_end_year_filter, filters):
+                            filters.append(race_end_year_filter)
+                        filters.append(
+                            {'table': 'race_info', 'column': 'is_total_results_page', 'compare': '=', 'value': '1'})
+            case 'placing':
+                if not has_filter_been_added(race_start_year_filter, filters):
+                    filters.append(race_start_year_filter)
+                if not has_filter_been_added(race_end_year_filter, filters):
+                    filters.append(race_end_year_filter)
+                if (field_dict['placing_filter'] == 'between') and ('placing_end' in field_dict):
+                    filters.append({'table': 'race_results', 'column': 'placement', 'compare': '>=',
+                                    'value': field_dict['placing']})
+                    filters.append({'table': 'race_results', 'column': 'placement', 'compare': '<=',
+                                    'value': field_dict['placing_end']})
+                else:
+                    filters.append(
+                        {'table': 'race_results', 'column': 'placement', 'compare': field_dict['placing_filter'],
+                         'value': field_dict['placing']})
+            case 'age':
+                if (field_dict['age_filter'] == 'between') and ('age_end' in field_dict):
+                    filters.append(
+                        {'table': 'rider_info', 'column': 'age', 'compare': '>=', 'value': field_dict['age']})
+                    filters.append(
+                        {'table': 'rider_info', 'column': 'age', 'compare': '<=', 'value': field_dict['age_end']})
+                else:
+                    filters.append({'table': 'rider_info', 'column': 'age', 'compare': field_dict['age_filter'],
+                                    'value': field_dict['age']})
+            case 'profile_score':
+                if not has_filter_been_added(race_start_year_filter, filters):
+                    filters.append(race_start_year_filter)
+                if not has_filter_been_added(race_end_year_filter, filters):
+                    filters.append(race_end_year_filter)
+                if (field_dict['profile_score_filter'] == 'between') and ('profile_score_end' in field_dict):
+                    filters.append({'table': 'race_info', 'column': 'profile_score', 'compare': '>=',
+                                    'value': field_dict['profile_score']})
+                    filters.append({'table': 'race_info', 'column': 'profile_score', 'compare': '<=',
+                                    'value': field_dict['profile_score_end']})
+                else:
+                    filters.append(
+                        {'table': 'race_info', 'column': 'profile_score', 'compare': field_dict['profile_score_filter'],
+                         'value': field_dict['profile_score']})
+            case 'startlist_quality_score':
+                if not has_filter_been_added(race_start_year_filter, filters):
+                    filters.append(race_start_year_filter)
+                if not has_filter_been_added(race_end_year_filter, filters):
+                    filters.append(race_end_year_filter)
+                if (field_dict['startlist_quality_score_filter'] == 'between') and (
+                        'startlist_quality_score_end' in field_dict):
+                    filters.append(
+                        {'table': 'race_info', 'column': 'startlist_quality_score',
+                         'compare': '>=',
+                         'value': field_dict['startlist_quality_score']}
+                    )
+                    filters.append(
+                        {'table': 'race_info', 'column': 'startlist_quality_score',
+                         'compare': '<=',
+                         'value': field_dict['startlist_quality_score_end']}
+                    )
+                else:
+                    filters.append(
+                        {'table': 'race_info', 'column': 'startlist_quality_score',
+                         'compare': field_dict['startlist_quality_score_filter'],
+                         'value': field_dict['startlist_quality_score']}
+                    )
+            case 'pcs_points':
+                if not has_filter_been_added(race_start_year_filter, filters):
+                    filters.append(race_start_year_filter)
+                if not has_filter_been_added(race_end_year_filter, filters):
+                    filters.append(race_end_year_filter)
+                if (field_dict['pcs_points_filter'] == 'between') and ('pcs_points_end' in field_dict):
+                    filters.append({'table': 'race_results', 'column': 'pcs_points', 'compare': '>=',
+                                    'value': field_dict['pcs_points']})
+                    filters.append({'table': 'race_results', 'column': 'pcs_points', 'compare': '<=',
+                                    'value': field_dict['pcs_points_end']})
+                else:
+                    filters.append(
+                        {'table': 'race_results', 'column': 'pcs_points', 'compare': field_dict['pcs_points_filter'],
+                         'value': field_dict['pcs_points']})
+            case 'uci_points':
+                if not has_filter_been_added(race_start_year_filter, filters):
+                    filters.append(race_start_year_filter)
+                if not has_filter_been_added(race_end_year_filter, filters):
+                    filters.append(race_end_year_filter)
+                if (field_dict['uci_points_filter'] == 'between') and ('uci_points_end' in field_dict):
+                    filters.append({'table': 'race_results', 'column': 'uci_points', 'compare': '>=',
+                                    'value': field_dict['uci_points']})
+                    filters.append({'table': 'race_results', 'column': 'uci_points', 'compare': '<=',
+                                    'value': field_dict['uci_points_end']})
+                else:
+                    filters.append(
+                        {'table': 'race_results', 'column': 'uci_points', 'compare': field_dict['uci_points_filter'],
+                         'value': field_dict['uci_points']})
+            case 'pcs_points_trend':
+                if not has_filter_been_added(
+                        {'table': 'trend', 'column': 'date', 'compare': '>=', 'value': field_dict['startyear']},
+                        filters):
+                    filters.append(
+                        {'table': 'trend', 'column': 'date', 'compare': '>=', 'value': field_dict['startyear']})
+                if not has_filter_been_added(
+                        {'table': 'trend', 'column': 'date', 'compare': '<=', 'value': field_dict['endyear']}, filters):
+                    filters.append(
+                        {'table': 'trend', 'column': 'date', 'compare': '<=', 'value': field_dict['endyear']})
+                filters.append({'table': 'trend', 'column': 'pcs_points', 'compare': field_dict['pcs_points_trend']})
+            case 'uci_points_trend':
+                if not has_filter_been_added(
+                        {'table': 'trend', 'column': 'date', 'compare': '>=', 'value': field_dict['startyear']},
+                        filters):
+                    filters.append(
+                        {'table': 'trend', 'column': 'date', 'compare': '>=', 'value': field_dict['startyear']})
+                if not has_filter_been_added(
+                        {'table': 'trend', 'column': 'date', 'compare': '<=', 'value': field_dict['endyear']},
+                        filters):
+                    filters.append(
+                        {'table': 'trend', 'column': 'date', 'compare': '<=', 'value': field_dict['endyear']})
+                filters.append({'table': 'trend', 'column': 'uci_points', 'compare': field_dict['uci_points_trend']})
+            case 'rank':
+                if 'rank_year' in field_dict:
+                    filters.append({'table': 'rank', 'column': 'year', 'compare': '=',
+                                    'value': field_dict['rank_year']})
+                    if (field_dict['rank_filter'] == 'between') and ('rank_end' in field_dict):
+                        filters.append(
+                            {'table': 'rank', 'column': 'rank', 'compare': '>=', 'value': field_dict['rank']}
+                        )
+                        filters.append(
+                            {'table': 'rank', 'column': 'rank', 'compare': '<=', 'value': field_dict['rank_end']}
+                        )
+                    else:
+                        filters.append({'table': 'rank', 'column': 'rank', 'compare': field_dict['rank_filter'],
+                                        'value': field_dict['rank']})
+            case 'current_team_classes':
+                for _class in field_dict['current_team_classes']:
+                    filters.append(
+                        {'table': 'team_info', 'column': 'class', 'compare': '=', 'value': _class}
+                    )
+            case 'race_classes':
+                if not has_filter_been_added(race_start_year_filter, filters):
+                    filters.append(race_start_year_filter)
+                if not has_filter_been_added(race_end_year_filter, filters):
+                    filters.append(race_end_year_filter)
+                race_classes = field_dict['race_classes']
+                if len(race_classes) > 1:
+                    race_classes = tuple(race_classes)
+                    filters.append(
+                        {'table': 'race_info',
+                         'column': 'class',
+                         'compare': 'in',
+                         'value': race_classes}
+                    )
+                else:
+                    filters.append(
+                        {'table': 'race_info', 'column': 'class', 'compare': '=', 'value': race_classes[0]}
+                    )
+            case 'past_teams_classes':
+                filters.append({'table': 'team_history', 'column': 'season', 'compare': '>=',
+                                'value': field_dict['startyear'], 'only_selected': False})
+                filters.append({'table': 'team_history', 'column': 'season', 'compare': '<=',
+                                'value': field_dict['endyear'], 'only_selected': False})
+                for _class in field_dict['past_teams_classes']:
+                    if ('allow_other_teams' not in field_dict):
+                        filters.append(
+                            {'table': 'team_history', 'column': 'class', 'compare': '=', 'value': _class,
+                             'only_selected': True}
+                        )
+                    else:
+                        filters.append(
+                            {'table': 'team_history', 'column': 'class', 'compare': '=', 'value': _class,
+                             'only_selected': False}
+                        )
+            case 'parcour_types':
+                if not has_filter_been_added(race_start_year_filter, filters):
+                    filters.append(race_start_year_filter)
+                if not has_filter_been_added(race_end_year_filter, filters):
+                    filters.append(race_end_year_filter)
+                parcour_types = field_dict['parcour_types']
+                if len(parcour_types) > 1:
+                    parcour_types = tuple(parcour_types)
+                    filters.append(
+                        {'table': 'race_info',
+                         'column': 'parcour_type',
+                         'compare': 'in',
+                         'value': parcour_types}
+                    )
+                else:
+                    filters.append(
+                        {'table': 'race_info', 'column': 'parcour_type', 'compare': '=', 'value': parcour_types[0]}
+                    )
+
+    return filters
+
+
+def has_filter_been_added(given_filter: dict, filters: list[dict]) -> bool:
+    """
+    helper method for create_filters to check if a given filter has been created
+
+    Args:
+        given_filter: filter to check
+        filters: list of filters already created
+    Returns:
+        True if filter has been added, False otherwise
+    """
+    for filterDict in filters:
+        if (filterDict['table'] == given_filter['table'] and
+                filterDict['column'] == given_filter['column'] and
+                filterDict['compare'] == given_filter['compare']):
+            return True
+    return False
+
+
+'''Documentation'''
+@app.route('/docs')
+def docs_home():
+    return send_from_directory('site', 'overview/index.html')
+
+@app.route('/app-reference/')
+def app_docs():
+    return send_from_directory('site', 'app-reference/index.html')
+
+@app.route('/database-schema/')
+def database_docs():
+    return send_from_directory('site', 'database-schema/index.html')
+
+@app.route('/dataCleaner-reference/')
+def dataCleaner_docs():
+    return send_from_directory('site', 'dataCleaner-reference/index.html')
+
+@app.route('/dbBuilder-reference/')
+def hubspot_docs():
+    return send_from_directory('site', 'dbBuilder-reference/index.html')
+
+@app.route('/dbUpdater-reference/')
+def dbUpdater_docs():
+    return send_from_directory('site', 'dbUpdater-reference/index.html')
+
+@app.route('/documentation_maintenance/')
+def documentation_maintenance_docs():
+    return send_from_directory('site', 'documentation_maintenance/index.html')
+
+@app.route('/error_handling/')
+def error_handling_docs():
+    return send_from_directory('site', 'error_handling/index.html')
+
+@app.route('/overview/')
+def overview_docs():
+    return send_from_directory('site', 'overview/index.html')
+
+@app.route('/queryBuilder-reference/')
+def queryBuilder_docs():
+    return send_from_directory('site', 'queryBuilder-reference/index.html')
+
+@app.route('/Scraper-reference/')
+def Scraper_docs():
+    return send_from_directory('site', 'Scraper-reference/index.html')
+
+@app.route('/db_tests-reference/')
+def db_tests_docs():
+    return send_from_directory('site', 'db_tests-reference/index.html')
+
+@app.route('/queryBuilder_tests-reference/')
+def queryBuilder_tests_docs():
+    return send_from_directory('site', 'queryBuilder_tests-reference/index.html')
+
+@app.route('/Scraper_tests-reference/')
+def Scraper_tests_docs():
+    return send_from_directory('site', 'Scraper_tests-reference/index.html')
+
+@app.route('/user_guide/')
+def user_guide_docs():
+    return send_from_directory('site', 'user_guide/index.html')
+
+
+site_dir = os.path.join(app.root_path, 'site')
+@app.route('/<path:path>')
+def serve_docs(path):
+    return send_from_directory(site_dir, path)
 
 ####################### Cycling #######################
 
