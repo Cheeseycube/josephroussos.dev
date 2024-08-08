@@ -244,6 +244,7 @@ def cycling_home():
     """
     Page creation, modification, and controller method
     """
+    load_dotenv('/var/www/josephroussos.dev/.env')
     current_year = datetime.today().year
     last_year = current_year - 1
     if request.method == 'POST':
