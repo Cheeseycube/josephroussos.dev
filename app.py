@@ -55,7 +55,7 @@ def index():
 
 ####################### Chess ########################
 user = User(None, None)
-# TODO: Re-enable the Chess App once the database is refactored to Postgres
+# This section is disabled for now while it gets refactored
 #@app.route('/chess')
 #@app.route('/chess/<pageName>', methods=["GET", "POST"])
 #@app.route('/chess/analyze_game/<gameID>')
@@ -555,7 +555,9 @@ def has_filter_been_added(given_filter: dict, filters: list[dict]) -> bool:
             return True
     return False
 
-
+# TODO: USE FLASK FLAT PAGES TO SERVE A FEW FILES
+# documentation is not being built in order to preserve the integrity of the source code
+# if the documentation was built, these routes would serve it.
 '''Documentation'''
 @app.route('/docs')
 def docs_home():
