@@ -554,78 +554,88 @@ def has_filter_been_added(given_filter: dict, filters: list[dict]) -> bool:
                 filterDict['compare'] == given_filter['compare']):
             return True
     return False
+####################### Cycling #######################
 
-# TODO: USE FLASK FLAT PAGES TO SERVE A FEW FILES
-# documentation is not being built in order to preserve the integrity of the source code
-# if the documentation was built, these routes would serve it.
-'''Documentation'''
-@app.route('/docs')
+
+####################### Cycling Documentation #######################
+@app.route('/cycling/docs/')
 def docs_home():
-    return send_from_directory('site', 'overview/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'overview/index.html')
 
-@app.route('/app-reference/')
+@app.route('/cycling/app-reference/')
 def app_docs():
-    return send_from_directory('site', 'app-reference/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'app-reference/index.html')
 
-@app.route('/database-schema/')
+@app.route('/cycling/database-schema/')
 def database_docs():
-    return send_from_directory('site', 'database-schema/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'database-schema/index.html')
 
-@app.route('/dataCleaner-reference/')
+@app.route('/cycling/dataCleaner-reference/')
 def dataCleaner_docs():
-    return send_from_directory('site', 'dataCleaner-reference/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'dataCleaner-reference/index.html')
 
-@app.route('/dbBuilder-reference/')
+@app.route('/cycling/dbBuilder-reference/')
 def hubspot_docs():
-    return send_from_directory('site', 'dbBuilder-reference/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'dbBuilder-reference/index.html')
 
-@app.route('/dbUpdater-reference/')
+@app.route('/cycling/dbUpdater-reference/')
 def dbUpdater_docs():
-    return send_from_directory('site', 'dbUpdater-reference/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'dbUpdater-reference/index.html')
 
-@app.route('/documentation_maintenance/')
+@app.route('/cycling/documentation_maintenance/')
 def documentation_maintenance_docs():
-    return send_from_directory('site', 'documentation_maintenance/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'documentation_maintenance/index.html')
 
-@app.route('/error_handling/')
+@app.route('/cycling/error_handling/')
 def error_handling_docs():
-    return send_from_directory('site', 'error_handling/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'error_handling/index.html')
 
-@app.route('/overview/')
+@app.route('/cycling/overview/')
 def overview_docs():
-    return send_from_directory('site', 'overview/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'overview/index.html')
 
-@app.route('/queryBuilder-reference/')
+@app.route('/cycling/queryBuilder-reference/')
 def queryBuilder_docs():
-    return send_from_directory('site', 'queryBuilder-reference/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'queryBuilder-reference/index.html')
 
-@app.route('/Scraper-reference/')
+@app.route('/cycling/Scraper-reference/')
 def Scraper_docs():
-    return send_from_directory('site', 'Scraper-reference/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'Scraper-reference/index.html')
 
-@app.route('/db_tests-reference/')
+@app.route('/cycling/db_tests-reference/')
 def db_tests_docs():
-    return send_from_directory('site', 'db_tests-reference/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'db_tests-reference/index.html')
 
-@app.route('/queryBuilder_tests-reference/')
+@app.route('/cycling/queryBuilder_tests-reference/')
 def queryBuilder_tests_docs():
-    return send_from_directory('site', 'queryBuilder_tests-reference/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'queryBuilder_tests-reference/index.html')
 
-@app.route('/Scraper_tests-reference/')
+@app.route('/cycling/Scraper_tests-reference/')
 def Scraper_tests_docs():
-    return send_from_directory('site', 'Scraper_tests-reference/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'Scraper_tests-reference/index.html')
 
-@app.route('/user_guide/')
+@app.route('/cycling/user_guide/')
 def user_guide_docs():
-    return send_from_directory('site', 'user_guide/index.html')
+    return send_from_directory('Cycling_demo_docs/site', 'user_guide/index.html')
 
 
-site_dir = os.path.join(app.root_path, 'site')
+site_dir = os.path.join(app.root_path, 'Cycling_demo_docs/site')
 @app.route('/<path:path>')
 def serve_docs(path):
     return send_from_directory(site_dir, path)
 
-####################### Cycling #######################
+@app.route('/cycling/assets/<path:filepath>')
+def cycling_docs_assets(filepath):
+    return send_from_directory(site_dir + '/assets', filepath)
+
+@app.route('/cycling/images/<path:filepath>')
+def cycling_docs_images(filepath):
+    return send_from_directory('Cycling_demo_docs/docs/images/', filepath)
+
+@app.route('/cycling/search/<path:filepath>')
+def cycling_docs_search(filepath):
+    return send_from_directory(site_dir + '/search', filepath)
+####################### Cycling Documentation #######################
 
 
 

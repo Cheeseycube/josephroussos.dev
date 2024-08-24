@@ -1,0 +1,51 @@
+site_name: PCS Filter Tool Docs
+theme:
+  name: "material"
+  features:
+    - search.suggest
+    - search.highlight
+  palette:
+    # palette toggle for light mode
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # palette toggle for dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - "../Cycling"
+            - "."
+            - ".."
+            - "../Cycling/tests"
+  - search
+
+markdown_extensions:
+  - pymdownx.snippets
+
+
+nav:
+  - Home: index.md
+  - Overview: overview.md
+  - DataBase Schema: database-schema.md
+  - Code Reference:
+      - Scraper-reference.md
+      - dataCleaner-reference.md
+      - dbBuilder-reference.md
+      - dbUpdater-reference.md
+      - queryBuilder-reference.md
+      - app-reference.md
+      - db_tests-reference.md
+      - queryBuilder_tests-reference.md
+      - Scraper_tests-reference.md
+  - Errors and other Messages: error_handling.md
+  - Documentation Maintenance: documentation_maintenance.md
+  - User Guide: user_guide.md
