@@ -635,6 +635,10 @@ def cycling_docs_images(filepath):
 @app.route('/cycling/search/<path:filepath>')
 def cycling_docs_search(filepath):
     return send_from_directory(site_dir + '/search', filepath)
+
+@app.route('/cycling/')
+def return_home():
+    return cycling_home()
 ####################### Cycling Documentation #######################
 
 
